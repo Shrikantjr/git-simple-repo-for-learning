@@ -1,0 +1,60 @@
+@Then("“Eligible Until Date” on Account Summary screen should be “Create Date” on History Details screen + {int} business day")
+	public void eligibleUntilDateShouldBeCreateDatePlusThreeBusinessDays(int arg0) throws ParseException {
+		BillingHistoryPagenew page = new BillingHistoryPagenew(getDriver());
+		BillingSummaryPage page1 = new BillingSummaryPage(getDriver());
+		//AdministrationPage page2 = new AdministrationPage(getDriver());
+		BillingCenterAccountSearchPage page3 = new BillingCenterAccountSearchPage(getDriver());
+
+		page.navigateToHistoryScreen();
+		page.clickPolicyHistoryEvent("Policy Issuance");
+		String historyScreenCreateDate = page.getPolCreateDate();
+
+		page1.navigateToAdministrationTab();
+		page1.navigateToHolidayScreen();
+
+		ArrayList<String> holidays = page1.getHolidays();
+
+		page3.navigateToAccountSearchTab();
+		page3.searchByAccountNumberForHoliday();
+
+		page1.navigateToBillingSummaryScreen();
+		String eligibleUntilDate = page1.getEligibleUnitDate();
+		Assert.assertTrue(eligibleUntilDate.isEmpty(), "Eligible until date is found empty");
+
+		int businessDayCounter = 0;
+		int count = 0;
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+		LocalDate date1 = LocalDate.parse(historyScreenCreateDate, formatter);
+
+		LocalDate tempVal = date1;
+		for(int i = 0; i<7 ; i++){
+			tempVal = tempVal.plusDays(1);
+			if (tempVal.getDayOfWeek() == DayOfWeek.SATURDAY || tempVal.getDayOfWeek() == DayOfWeek.SUNDAY) {
+				businessDayCounter++;
+			}
+			else if (holidays.contains(tempVal.format(formatter))) {
+				businessDayCounter++;
+			}
+			else{
+				count++;
+			}
+			if (count ==3){
+				break;
+			}
+		}
+		Assert.assertEquals(tempVal.format(formatter), eligibleUntilDate, "Created date & eligible until date is not equal");
+
+	}
+  
+  //getting holidays
+  
+  public ArrayList<String> getHolidays(){
+        List<WebElement> holidays = getDriver().findElements(By.xpath("//div[@id='HolidaysPage:HolidaysScreen:HolidaysLV-body']//tbody//tr//td[position()=3]//div"));
+        ArrayList<String> el = new ArrayList<String>();
+        for (int i =0; i<holidays.size(); i++){
+            System.out.println("values are: " + holidays.get(i).getText());
+            el.add(holidays.get(i).getText());
+        }
+        System.out.println("size of list is: " + holidays.size());
+        return el;
+    }
