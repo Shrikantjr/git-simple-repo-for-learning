@@ -1,0 +1,10 @@
+public Long monthsBetween(){
+        DateTimeFormatter f = new DateTimeFormatterBuilder().parseCaseInsensitive()
+                .append(DateTimeFormatter.ofPattern("MM/dd/yyyy")).toFormatter();
+
+        Long monthsBetween =  ChronoUnit.MONTHS.between(
+                YearMonth.from(LocalDate.parse(getEffectiveDateFromColumn(), f)),
+                YearMonth.from(LocalDate.parse(getExpirationDateFromColumn(), f))
+        );
+        return monthsBetween;
+    }
