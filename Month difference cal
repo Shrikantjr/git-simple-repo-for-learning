@@ -8,3 +8,54 @@ public Long monthsBetween(){
         );
         return monthsBetween;
     }
+
+
+caaling in method
+
+ @Then("I verify Invoices generated count in Amount due screen as per Payment plan")
+    public void iVerifyInvoicesGeneratedCountInAmountDueScreenAsPerPaymentPlan() {
+        /*
+          validate 3 conditions
+         (1. For Payment plan = Full Pay then 1 invoice should be generated
+         2. For Payment plan = 6 months then 5 invoice should be generated
+         3. For Payment plan = 12 months then 11 invoice should be generated)
+         */
+        BillingSummaryPage page = new BillingSummaryPage(getDriver());
+        BillingAmountsDuePage page1 = new BillingAmountsDuePage(getDriver());
+
+        page.navigateToBillingSummaryScreen();
+        String paymentPlanInBillingSumScreen = page.getPaymentPlan();
+
+        Long diffBetnEffeciveAndExpiration = page.monthsBetween();
+
+        page1.navigateToAmountsDueScreen();
+        int countOfInvoicesGenerated = 0;
+        try {
+             countOfInvoicesGenerated = page1.getInvoiceNumberCount();
+        }
+        catch (Exception e){
+            Assert.fail("No Table or record found");
+        }
+
+        if (paymentPlanInBillingSumScreen.equals("Monthly") && diffBetnEffeciveAndExpiration == 12 ){
+            //Assert.assertTrue(countOfInvoicesGenerated.equalsIgnoreCase(paymentPlanInBillingSumScreen), "11 invoice should be generated");
+            getScenarioContext().getSoftAssertions().assertTrue(countOfInvoicesGenerated == 11,
+                    "11 invoice should be generated for payment plan equals to 12 monthly");
+        }
+
+       else if (paymentPlanInBillingSumScreen.equals("Monthly") && diffBetnEffeciveAndExpiration == 6 ){
+            //Assert.assertTrue(countOfInvoicesGenerated.equalsIgnoreCase(paymentPlanInBillingSumScreen), "11 invoice should be generated");
+            getScenarioContext().getSoftAssertions().assertTrue(countOfInvoicesGenerated == 5,
+                    "5 invoice should be generated for payment plan equals to 6 monthly");
+
+        }
+
+
+        else if (paymentPlanInBillingSumScreen.equals("Full Pay")){
+            getScenarioContext().getSoftAssertions().assertTrue(countOfInvoicesGenerated == 1,
+                    "1 invoice should be generated for payment plan equals to monthly");
+        }
+        else if (countOfInvoicesGenerated == 0){
+            Assert.fail("0 invoice generated is displayed");
+        }
+    }
